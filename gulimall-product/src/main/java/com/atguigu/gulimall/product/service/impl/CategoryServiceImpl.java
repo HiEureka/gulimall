@@ -89,4 +89,15 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         }).collect(Collectors.toList());
         return children;
     }
+    /**
+     * 删除,批量删除
+     * @RequesBody:获取请求体，必须发送POST请求
+     * springMVC自动将请求体的数据（json）封装为对应的对象，这里是Long[]
+     */
+    @Override
+    public void removeMenuByIds(List<Long> asList) {
+    //TODO 检查当前删除的菜单，是否被别的地方引用
+        baseMapper.deleteBatchIds(asList);
+    }
+
 }

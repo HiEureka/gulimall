@@ -21,5 +21,11 @@ public interface CategoryService extends IService<CategoryEntity> {
      * 查出所有分类以及子分类，以树形结构组装起来
      */
     List<CategoryEntity> listWithTree();
+    /**
+     * 删除,批量删除
+     * @RequesBody:获取请求体，必须发送POST请求
+     * springMVC自动将请求体的数据（json）封装为对应的对象，这里是Long[]
+     */
+    void removeMenuByIds(List<Long> asList);
 }
 
