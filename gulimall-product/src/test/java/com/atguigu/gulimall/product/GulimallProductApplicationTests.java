@@ -34,9 +34,9 @@ public class GulimallProductApplicationTests {
     public void updateBrand() {
         BrandEntity entity = new BrandEntity();
         entity.setBrandId(1L);
-        entity.setName("苹果");
+        entity.setName("Iphone");
         entity.setDescript("美国企业");
-        boolean result = brandService.save(entity);
+        boolean result = brandService.updateById(entity);
         if (result){
             System.out.println("修改成功！");
         } else {

@@ -59,17 +59,17 @@
             <scope>provided</scope>
         </dependency>
         <!--        服务注册/发现-->
-    <!--    <dependency>
+       <dependency>
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
         </dependency>
-    -->
+
         <!--        配置中心来做配置管理-->
-    <!--    <dependency>
+        <dependency>
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
         </dependency>
-    -->
+
 
     <!--    <dependency>
             <groupId>javax.validation</groupId>
@@ -79,7 +79,7 @@
     -->
 
     </dependencies>
-    <!--
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -90,7 +90,8 @@
                 <scope>import</scope>
             </dependency>
         </dependencies>
+        <!--有了这个依赖版本控制，再引入alibabaCloud依赖时就不用再指定版本号了-->
     </dependencyManagement>
-    -->
+
 
 </project>
