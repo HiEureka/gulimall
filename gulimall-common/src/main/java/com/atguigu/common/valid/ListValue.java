@@ -1,5 +1,5 @@
 package com.atguigu.common.valid;
-/*
+
 import javax.validation.Constraint;
 import javax.validation.Payload;
 import java.lang.annotation.Documented;
@@ -11,7 +11,7 @@ import static java.lang.annotation.ElementType.TYPE_USE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Documented
-@Constraint(validatedBy = { ListValueConstraintValidator.class })
+@Constraint(validatedBy = { ListValueConstraintValidator.class })//可以指定多个校验器，比如再加上定义的校验double类型
 @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE })
 @Retention(RUNTIME)
 public @interface ListValue {
@@ -23,4 +23,4 @@ public @interface ListValue {
 
     int[] vals() default { };
 }
-*/
+

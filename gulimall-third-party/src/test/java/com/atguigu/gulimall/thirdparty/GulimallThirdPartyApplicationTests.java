@@ -1,33 +1,28 @@
-package com.atguigu.gulimall.product;
+package com.atguigu.gulimall.thirdparty;
 
-//import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-//import com.aliyun.oss.*;
-import com.atguigu.gulimall.product.entity.BrandEntity;
-import com.atguigu.gulimall.product.service.BrandService;
+import com.aliyun.oss.ClientException;
+import com.aliyun.oss.OSS;
+import com.aliyun.oss.OSSClient;
+import com.aliyun.oss.OSSException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-//import org.springframework.aop.scope.ScopedProxyUtils;
-//import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.annotation.Resource;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-//import javax.annotation.Resource;
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class GulimallProductApplicationTests {
-    @Autowired
-    BrandService brandService;
-    /*
-    p63,取消了common里面的spring-cloud-starter-alicloud-oss，单独加入third-party中
+public class GulimallThirdPartyApplicationTests {
+
+    @Test
+    public void contextLoads() {
+    }
     @Autowired //@Resource
-    OSSClient ossClient;  //想没有红线可以使用@Resource
+    OSS ossClient;  //想没有红线可以使用@Resource
     @Test
     public void testUpload(){
         // Endpoint以华东1（杭州）为例，其它Region请按实际情况填写。
@@ -72,32 +67,5 @@ public class GulimallProductApplicationTests {
             }
         }
     }
-*/
-
-    @Test
-     public void contextLoads() {
-        BrandEntity entity = new BrandEntity();
-        entity.setName("华为");
-        entity.setDescript("中国企业");
-        boolean result = brandService.save(entity);
-        if (result){
-            System.out.println("保存成功！");
-        } else {
-            System.out.println("保存失败，发生未知错误");
-        }
-    }
-    @Test
-    public void updateBrand() {
-        BrandEntity entity = new BrandEntity();
-        entity.setBrandId(1L);
-        entity.setName("Iphone");
-        entity.setDescript("美国企业");
-        boolean result = brandService.updateById(entity);
-        if (result){
-            System.out.println("修改成功！");
-        } else {
-            System.out.println("修改失败，发生未知错误");
-        }
-    }
-
 }
+
