@@ -27,5 +27,14 @@ public interface CategoryService extends IService<CategoryEntity> {
      * springMVC自动将请求体的数据（json）封装为对应的对象，这里是Long[]
      */
     void removeMenuByIds(List<Long> asList);
+
+
+    //【根据表pms_attr_group里面的catelogId(就是pms_category表里面的catId)查询父分类id，并将自己的id和父分类id放入Long数组】
+    /**
+     * 找到catelogId的完整路径[父/子/孙]
+     * @param catelogId
+     * @return
+     */
+    Long[] findCategoryPath(Long catelogId);
 }
 

@@ -4,6 +4,8 @@ package com.atguigu.gulimall.product;
 //import com.aliyun.oss.*;
 import com.atguigu.gulimall.product.entity.BrandEntity;
 import com.atguigu.gulimall.product.service.BrandService;
+import com.atguigu.gulimall.product.service.CategoryService;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 //import org.springframework.aop.scope.ScopedProxyUtils;
@@ -17,13 +19,23 @@ import javax.annotation.Resource;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 //import javax.annotation.Resource;
+@Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class GulimallProductApplicationTests {
     @Autowired
     BrandService brandService;
+    @Autowired
+    CategoryService categoryService;
+
+    @Test
+    public void findParentPath(){
+        Long[] path = categoryService.findCategoryPath(225L);
+        log.info("完整路径path-------------->{}", Arrays.asList(path));//path----------->[2, 34, 225]
+    }
     /*
     p63,取消了common里面的spring-cloud-starter-alicloud-oss，单独加入third-party中
     @Autowired //@Resource

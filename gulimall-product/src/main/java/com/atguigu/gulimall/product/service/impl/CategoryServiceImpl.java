@@ -3,6 +3,8 @@ package com.atguigu.gulimall.product.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -100,4 +102,31 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         baseMapper.deleteBatchIds(asList);
     }
 
+    @Override
+    public Long[] findCategoryPath(Long catelogId) {
+        List<Long> paths = new ArrayList<>();
+        //查询出当前catelogId（catId）对应的当前分类
+        //CategoryEntity byId = this.getById(catelogId);
+        //查询出当前分类是否有父分类并查出父分类的信息
+        //if (byId.getParentCid() != 0){
+            //递归查询
+
+        //}
+        List<Long> parentPath = findParentPath(catelogId, paths);
+        //逆序集合
+        Collections.reverse(parentPath);
+        return (Long[])parentPath.toArray(new Long[parentPath.size()]);
+    }
+    //递归查询父分类
+    private List<Long> findParentPath(Long catelogId,List<Long> paths){
+        //先将当前分类id放入集合
+        paths.add(catelogId);
+        CategoryEntity byId = this.getById(catelogId);
+        //查询出当前分类是否有父分类并查出父分类的信息
+        if (byId.getParentCid() != 0){
+        //递归查询
+            findParentPath(byId.getParentCid(),paths);
+        }
+        return paths;
+    }
 }
