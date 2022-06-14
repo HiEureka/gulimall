@@ -1,5 +1,7 @@
 package com.atguigu.gulimall.product.service.impl;
 
+import com.atguigu.gulimall.product.entity.CategoryBrandRelationEntity;
+import com.atguigu.gulimall.product.service.CategoryBrandRelationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,10 +20,15 @@ import com.atguigu.common.utils.Query;
 import com.atguigu.gulimall.product.dao.CategoryDao;
 import com.atguigu.gulimall.product.entity.CategoryEntity;
 import com.atguigu.gulimall.product.service.CategoryService;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 
 @Service("categoryService")
 public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity> implements CategoryService {
+    @Autowired
+    CategoryBrandRelationService categoryBrandRelationService;
+
     //使用哪张表就要注入哪个dao
     /*方式一
     @Autowired
@@ -117,6 +124,25 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         Collections.reverse(parentPath);
         return (Long[])parentPath.toArray(new Long[parentPath.size()]);
     }
+
+
+    /**
+     * //级联更新所有关联的数据
+     * @param category
+     */
+    @Transactional  //事务
+    @Override  //p75
+    public void updateCascade(CategoryEntity category) {
+        //先更新自己
+        this.updateById(category);
+        if (!StringUtils.isEmpty(category.getName())){
+            //更新pms_category_brand_relation，注入service
+            categoryBrandRelationService.updateCategory(category.getCatId(), category.getName());
+            //TODO
+        }
+
+    }
+
     //递归查询父分类
     private List<Long> findParentPath(Long catelogId,List<Long> paths){
         //先将当前分类id放入集合
