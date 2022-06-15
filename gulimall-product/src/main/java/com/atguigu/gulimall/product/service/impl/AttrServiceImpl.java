@@ -8,8 +8,10 @@ import com.atguigu.gulimall.product.entity.AttrAttrgroupRelationEntity;
 import com.atguigu.gulimall.product.entity.AttrGroupEntity;
 import com.atguigu.gulimall.product.entity.CategoryEntity;
 import com.atguigu.gulimall.product.service.AttrAttrgroupRelationService;
+import com.atguigu.gulimall.product.service.CategoryService;
 import com.atguigu.gulimall.product.vo.AttrRespVo;
 import com.atguigu.gulimall.product.vo.AttrVo;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,7 +45,9 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
     AttrGroupDao attrGroupDao;  //分组
     @Autowired
     CategoryDao categoryDao;  //分类
-
+    @Autowired
+    CategoryService categoryService;//分类，在P78注入service而不是直接用dao
+                                        // 是为了使用里面的递归查找父分类id的方法Long[] findCategoryPath(Long catelogId);
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         IPage<AttrEntity> page = this.page(
@@ -124,6 +128,77 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         })).collect(Collectors.toList());
         pageUtils.setList(respVos);
         return pageUtils;
+    }
+    //因为没有那两个字段，所以使用我们自定义的AttrRespVo对象，想办法封装上那两个字段
+    @Override
+    @Transactional
+    public AttrRespVo getAttrInfo(Long attrId) {
+        AttrRespVo respVo = new AttrRespVo();
+        //先查出AttrEntity实体类，即pms_attr表中所有的信息
+        AttrEntity attrEntity = this.getById(attrId);
+        //将信息拷贝进响应对象，下面再将没有的那两个字段查出来，设置进respVo
+        BeanUtils.copyProperties(attrEntity,respVo);
+        //"attrGroupId" : 1 和  "catelogPath": [2, 34, 225]
+
+        // 1、设置分组信息，relationDao
+        //其中attrGroupId可以由attrId在关联表pms_attr_attrgroup_relation中查询到
+        AttrAttrgroupRelationEntity attrAttrgroupRelationEntity = relationDao.selectOne(
+                new QueryWrapper<AttrAttrgroupRelationEntity>().eq("attr_id", attrId));
+        if (attrAttrgroupRelationEntity != null){
+            //设置attrGroupId
+            respVo.setAttrGroupId(attrAttrgroupRelationEntity.getAttrGroupId());
+            //顺便有了attrGroupId就把attr_group_name也设置了，虽然用不到  表: pms_attr_group  DAO :AttrGroupDao
+            AttrGroupEntity attrGroupEntity = attrGroupDao.selectById(attrAttrgroupRelationEntity.getAttrGroupId());
+            if (attrGroupEntity != null) {
+                respVo.setGroupName(attrGroupEntity.getAttrGroupName());
+            }
+        }
+        //2、设置分类信息 ，
+        //catelogPath，利用上面查到的attrGroupId在pms_attr_group表中可以查到catelog_id，DAO :AttrGroupDao <--AttrEntity里面有catelog_id
+        // 再利用catelog_id在pms_category表中递归查询出cat_id（parent_cid）即可   DAO : CategoryDao
+        //不用不用，AttrEntity 里面有catelog_id 害，
+        Long catelogId = attrEntity.getCatelogId();
+        Long[] categoryPath = categoryService.findCategoryPath(catelogId);
+        respVo.setCatelogPath(categoryPath);
+        //顺便把名字也设置了
+        CategoryEntity categoryEntity = categoryDao.selectById(catelogId);
+        if (categoryEntity != null){
+            respVo.setCatelogName(categoryEntity.getName());
+        }
+        return respVo;
+    }
+
+    @Override
+    @Transactional
+    public void updateAttr(AttrVo attr) {
+        //先修改基本信息
+        AttrEntity attrEntity = new AttrEntity();
+        BeanUtils.copyProperties(attr,attrEntity);
+        this.updateById(attrEntity);
+
+        //修改分组关联pms_attr_attrgroup_relation表
+        //即由attr_id 修改新的attr_group_id
+        /*
+        AttrAttrgroupRelationEntity relationEntity = new AttrAttrgroupRelationEntity();
+        relationEntity.setAttrGroupId(attr.getAttrGroupId());
+        relationEntity.setAttrId(attr.getAttrId());
+        relationDao.update(relationEntity,
+                new UpdateWrapper<AttrAttrgroupRelationEntity>().eq("attr_id",attr.getAttrId()));
+         */
+        //修改分组关联pms_attr_attrgroup_relation表
+        //即由attr_id 修改新的attr_group_id
+        AttrAttrgroupRelationEntity relationEntity = new AttrAttrgroupRelationEntity();
+        relationEntity.setAttrGroupId(attr.getAttrGroupId());
+        relationEntity.setAttrId(attr.getAttrId());
+        Integer count = relationDao.selectCount(new QueryWrapper<AttrAttrgroupRelationEntity>().eq("attr_id", attr.getAttrId()));
+        if (count > 0) {
+            //修改操作
+            relationDao.update(relationEntity,
+                    new UpdateWrapper<AttrAttrgroupRelationEntity>().eq("attr_id",attr.getAttrId()));
+        }else {
+            //添加操作
+            relationDao.insert(relationEntity);
+        }
     }
 
 }
