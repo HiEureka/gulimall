@@ -16,14 +16,21 @@ import com.atguigu.gulimall.product.entity.AttrEntity;
 import com.atguigu.gulimall.product.service.AttrService;
 import com.atguigu.common.utils.PageUtils;
 import com.atguigu.common.utils.R;
-
+/**
+ * 其实【规格参数】和【销售属性】请求地址仅仅是一个是base，一个是sale
+ * 规格参数 http://localhost:88/api/product/attr/base/list/225?t=1655212631188&page=1&limit=10&key=   查询
+ * 销售属性 http://localhost:88/api/product/attr/sale/list/225?t=1655297178852&page=1&limit=10&key=   查询
+ */
 //平台属性-->规格参数里面的新增    请求地址http://localhost:88/api/product/attr/save
 //平台属性-->规格参数 进入该页面自动发送请求  http://localhost:88/api/product/attr/base/list/0?t=1655212407322&page=1&limit=10&key=
 //平台属性-->规格参数 选择三级菜单中的手机->手机通讯->手机 发送请求  http://localhost:88/api/product/attr/base/list/225?t=1655212631188&page=1&limit=10&key=
 //平台属性-->规格参数-->修改， 数据回显  发送请求 http://localhost:88/api/product/attr/info/10?t=1655260008942
 //                                        即http://localhost:88/api/product/attr/info/{attr_id}?t=1655260008942
-
-//平台属性-->规格参数-->修改， 数据回显-->填入要修改数据 --> 确认，发送请求 http://localhost:88/api/product/attr/update
+//平台属性-->规格参数-->修改， 数据回显-->填入要修改数据 --> 确认（添加数据到数据库），发送请求 http://localhost:88/api/product/attr/update
+//------------------------------------------
+//平台属性-->销售属性 进入页面自动发送请求 http://localhost:88/api/product/attr/sale/list/0?t=1655297018900&page=1&limit=10&key=
+//平台属性-->销售属性->选择三级菜单中的手机->手机通讯->手机 发送请求 http://localhost:88/api/product/attr/sale/list/225?t=1655297178852&page=1&limit=10&key=
+//平台属性-->销售属性-->修改，数据回显-->填入要修改数据 --> 确认（添加数据到数据库），发送请求http://localhost:88/api/product/attr/update
 /**
  * 商品属性
  *
@@ -39,6 +46,8 @@ public class AttrController {
 
     //请求地址base/list/0?t=1655212407322&page=1&limit=10&key=
     //请求地址base/list/225?t=1655212631188&page=1&limit=10&key=
+    //请求地址sale/list/225?t=1655212631188&page=1&limit=10&key=
+    //请求地址sale/list/225?t=1655212631188&page=1&limit=10&key=
     /**
      * 列表
      * 请求参数{
@@ -70,13 +79,16 @@ public class AttrController {
      * 			"valueType": 0//值类型[0-为单个值，1-可以选择多个值]
      *                }]* 	}
      * }
+     *pms_category_brand_relation表里面的 6 	    11		null    null   就是没有区分基本属性和销售属性时
      */
-    @RequestMapping("/base/list/{catelogId}")
+    //@RequestMapping("/base/list/{catelogId}")  P78//规格参数，如果复习时看到p78有疑惑，请看看P79
+    @RequestMapping("/{attrType}/list/{catelogId}")//P79 区分销售属性和规格参数
     //@RequiresPermissions("product:attr:list")
     public R baseAttrList(@RequestParam Map<String, Object> params,
-                          @PathVariable("catelogId") Long catelogId){
-        PageUtils page = attrService.queryBaseAttrPage(params,catelogId);
-
+                          @PathVariable("catelogId") Long catelogId,
+                          @PathVariable("attrType") String type){
+        //PageUtils page = attrService.queryBaseAttrPage(params,catelogId);
+        PageUtils page = attrService.queryBaseAttrPage(params,catelogId,type);
         return R.ok().put("page", page);
     }
 
@@ -137,6 +149,24 @@ public class AttrController {
     */
     /**
      * 保存，利用我们的AttrVo对象
+     *我们的业务要求是：当是规格参数的新增时才会将分组信息保存进关系表pms_attr_attrgroup_relation
+     *               当是销售属性的新增时，是不会把分组信息保存进关系表的
+     *               【当然，修改的时候也是一样的。不再赘述】
+     * 当是销售属性里面的新增时P79，6min左右，数据库里面attr_group_id字段没有值，是因为此时如果是销售属性的新增时，请求体数据为:
+     * {t: 1655297980747
+     * attrId: 11
+     * attrName: "颜色"
+     * searchType: 0
+     * valueType: 1
+     * icon: "xxx"
+     * valueSelect: "黑色;白色"
+     * attrType: 0
+     * enable: 1
+     * catelogId: 225
+     * attrGroupId: null  <<----
+     * showDesc: 0
+     * }我们只有在【规格参数】的时候的保存才需要在pms_attr_attrgroup_relation关系表中添加分组信息
+     * 【销售属性的新增时】我们是不再关系表中添加分组信息的
      */
     @RequestMapping("/save")
     //@RequiresPermissions("product:atr:save")
